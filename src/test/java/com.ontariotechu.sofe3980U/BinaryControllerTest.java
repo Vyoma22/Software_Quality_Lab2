@@ -29,8 +29,6 @@ public class BinaryControllerTest {
 
     @Autowired
     private MockMvc mvc;
-
-   
     @Test
     public void getDefault() throws Exception {
         this.mvc.perform(get("/"))//.andDo(print())
@@ -39,8 +37,7 @@ public class BinaryControllerTest {
 			.andExpect(model().attribute("operand1", ""))
 			.andExpect(model().attribute("operand1Focused", false));
     }
-	
-	    @Test
+    @Test
     public void getParameter() throws Exception {
         this.mvc.perform(get("/").param("operand1","111"))
             .andExpect(status().isOk())
@@ -56,13 +53,13 @@ public class BinaryControllerTest {
 			.andExpect(model().attribute("result", "1110"))
 			.andExpect(model().attribute("operand1", "111"));
     }
-    // Additional test case 1: Addition with one operand empty
+    // Additional test case 1: Addition with carry
     @Test
-    public void postParameterAdditionWithEmptyOperand() throws Exception {
-        this.mvc.perform(post("/").param("operand1", "111").param("operator", "+").param("operand2", ""))
+    public void postParameterAdditionWithCarry() throws Exception {
+        this.mvc.perform(post("/").param("operand1", "111").param("operator", "+").param("operand2", "111"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("result"))
-                .andExpect(model().attribute("result", "111")) // Operand2 treated as 0
+                .andExpect(model().attribute("result", "1110"))
                 .andExpect(model().attribute("operand1", "111"));
     }
     // Additional test case 2: Addition with single bit operands
@@ -70,45 +67,73 @@ public class BinaryControllerTest {
     public void postParameterAdditionWithSingleBitOperands() throws Exception {
         // Test POST request where both operands are single-bit binary numbers
         this.mvc.perform(post("/").param("operand1", "1").param("operator", "+").param("operand2", "1"))
-                .andExpect(status().isOk()) // Ensures the response is successful
-                .andExpect(view().name("result")) // Confirms the view name
-                .andExpect(model().attribute("result", "10")) // Verifies the correct addition result
-                .andExpect(model().attribute("operand1", "1")); // Confirms operand1 value
+                .andExpect(status().isOk())
+                .andExpect(view().name("result"))
+                .andExpect(model().attribute("result", "10"))
+                .andExpect(model().attribute("operand1", "1"));
     }
     // Additional test case 3: Addition with large binary numbers
     @Test
-    public void postParameterDivisionWithLargeBinary() throws Exception {
+    public void postParameterAdditionWithLargeBinary() throws Exception {
         this.mvc.perform(post("/").param("operand1", "1010101010101010").param("operator", "+").param("operand2", "1111111111111111"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("result"))
-                .andExpect(model().attribute("result", "11010101010101001")) // Expected result of binary addition
+                .andExpect(model().attribute("result", "11010101010101001"))
                 .andExpect(model().attribute("operand1", "1010101010101010"));
     }
+    // Test case 1 for AND operation
     @Test
     public void postParameterAndOperation() throws Exception {
         this.mvc.perform(post("/").param("operand1", "1101").param("operator", "&").param("operand2", "1011"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("result"))
-                .andExpect(model().attribute("result", "1001")) // Binary AND result
+                .andExpect(model().attribute("result", "1001"))
                 .andExpect(model().attribute("operand1", "1101"));
     }
-
+    // Test case 2 for AND operation
+    @Test
+    public void postParameterAndOperation2() throws Exception {
+        this.mvc.perform(post("/").param("operand1", "111001").param("operator", "&").param("operand2", "1011101"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("result"))
+                .andExpect(model().attribute("result", "11001"))
+                .andExpect(model().attribute("operand1", "111001"));
+    }
+    // Test case 1 for OR operation
     @Test
     public void postParameterOrOperation() throws Exception {
         this.mvc.perform(post("/").param("operand1", "1101").param("operator", "|").param("operand2", "1011"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("result"))
-                .andExpect(model().attribute("result", "1111")) // Binary OR result
+                .andExpect(model().attribute("result", "1111"))
                 .andExpect(model().attribute("operand1", "1101"));
     }
-
+    // Test case 2 for OR operation
+    @Test
+    public void postParameterOrOperation2() throws Exception {
+        this.mvc.perform(post("/").param("operand1", "111111").param("operator", "|").param("operand2", "1001001"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("result"))
+                .andExpect(model().attribute("result", "1111111"))
+                .andExpect(model().attribute("operand1", "111111"));
+    }
+    // Test case 1 for MULTIPLY operation
     @Test
     public void postParameterMultiplyOperation() throws Exception {
         this.mvc.perform(post("/").param("operand1", "101").param("operator", "*").param("operand2", "10"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("result"))
-                .andExpect(model().attribute("result", "1010")) // Binary Multiply result
+                .andExpect(model().attribute("result", "1010"))
                 .andExpect(model().attribute("operand1", "101"));
+    }
+    // Test case 2 for MULTIPLY operation
+    @Test
+    public void postParameterMultiplyOperation2() throws Exception {
+        this.mvc.perform(post("/").param("operand1", "11001").param("operator", "*").param("operand2", "1111"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("result"))
+                .andExpect(model().attribute("result", "101110111"))
+                .andExpect(model().attribute("operand1", "11001"));
     }
 
 }
